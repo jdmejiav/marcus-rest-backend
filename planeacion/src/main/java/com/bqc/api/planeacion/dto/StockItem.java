@@ -10,6 +10,7 @@ public class StockItem {
     private Integer numBoxes;
 
 
+
     public StockItem(List<PoDetails> poDetails, String name, Integer numBoxes) {
         this.poDetails = poDetails;
         this.name = name;

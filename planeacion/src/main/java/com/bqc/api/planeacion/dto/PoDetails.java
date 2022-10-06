@@ -12,6 +12,8 @@ public class PoDetails {
 
     private String boxType;
 
+    private String customer;
+
     public void setPo(String po) {
         this.po = po;
     }
@@ -26,6 +28,10 @@ public class PoDetails {
 
     public void setBoxType(String boxType) {
         this.boxType = boxType;
+    }
+
+    public void setCustomer(String customer) {
+        this.customer = customer;
     }
 
     public String getPo() {
@@ -44,11 +50,15 @@ public class PoDetails {
         return boxType;
     }
 
+    public String getCustomer() {
+        return customer;
+    }
 
-    public PoDetails(String po, Integer age, Integer numBoxes, String boxType) {
+    public PoDetails(String po, Integer age, Integer numBoxes, String boxType, String customer) {
         this.po = po;
         this.age = age;
         this.numBoxes = numBoxes;
         this.boxType = boxType;
+        this.customer = customer;
     }
 }

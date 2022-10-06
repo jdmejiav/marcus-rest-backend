@@ -38,13 +38,13 @@ public class WebFlowers {
         for (ItemInventory item: itemsInventory){
             if (!products.containsKey(item.getName())){
                  List<PoDetails> poDetails = new ArrayList<PoDetails>();
-                 poDetails.add(new PoDetails(item.getPoId(),item.getAge(), item.getBoxes(), item.getBoxCode()));
+                 poDetails.add(new PoDetails(item.getPoId(),item.getAge(), item.getBoxes(), item.getBoxCode(), item.getCustomer()));
 
                 products.put(item.getName(), new StockItem(poDetails, item.getName(), item.getBoxes()));
             }else{
                 StockItem stockItem = products.get(item.getName());
                 List<PoDetails> poDetails = stockItem.getPoDetails();
-                poDetails.add(new PoDetails(item.getPoId(), item.getAge(), item.getBoxes(), item.getBoxCode()));
+                poDetails.add(new PoDetails(item.getPoId(), item.getAge(), item.getBoxes(), item.getBoxCode(), item.getCustomer()));
                 Integer boxes = Integer.sum(stockItem.getNumBoxes(), item.getBoxes()) ;
                 stockItem.setNumBoxes(boxes);
                 stockItem.setPoDetails(poDetails);
@@ -53,6 +53,19 @@ public class WebFlowers {
         }
 
         return  products;
+
+    }
+
+
+    @GetMapping("/getCustomers")
+    public Object getCustomers (){
+        List<ItemInventory> itemsInventory = webFlowersFeignClient.getInventory("BQC", "0", "67a39b7b8bbe4581aed70a1f2562a784");
+        Map<String, String> customers = new HashMap<>();
+        for (ItemInventory item: itemsInventory){
+            customers.put(item.getCustomer(), "1");
+        }
+
+        return  customers.keySet();
 
     }
 
