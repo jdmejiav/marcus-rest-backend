@@ -122,9 +122,10 @@ async function main() {
                         let row = input["row"]
                         data = input["data"]
                         data.splice(data, row)
-                        for (let i = 0; i < data.length; i++) {
-                            data[i].id = i + 1
+                        for (let i = row; i < data.length; i++) {
+                            data[i].id = i + 1                        
                         }
+                        
                     }
                     for (key in clients) {
 
@@ -168,9 +169,9 @@ async function main() {
                                 "data": data
                             }
 
-
-                            //await updateData(client, "sameday", data)
                             clients[key].send(JSON.stringify(retorno));
+                            //await updateData(client, "sameday", data)
+                            
                             
                         }
                         //console.log("Al final")
