@@ -3,9 +3,10 @@ const webSocketServer = require('websocket').server;
 const { query } = require('express');
 const http = require('http');
 const { MongoClient } = require('mongodb');
+require('dotenv').config()
 
 
-const url = `mongodb+srv://bouquetplanning:YbkXB0NyuhWybFhK@mongodbtest.wrrye7l.mongodb.net/?retryWrites=true&w=majority`;
+const url = `mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@mongodbtest.wrrye7l.mongodb.net/?retryWrites=true&w=majority`;
 
 
 const server = http.createServer();
@@ -35,7 +36,7 @@ async function main() {
      */
 
 
-
+    console.log(process.env.DB_USERNAME)
     const client = new MongoClient(url);
 
     try {
