@@ -100,49 +100,43 @@ async function main() {
             var userID = getUniqueID();
 
             var data = await fetchData(client, "sameday")
-
+            var dataDict = {
+                sameday: await fetchData(client, "sameday"),
+                nextday: await fetchData(client, "nextday")
+            }
             console.log((new Date()) + 'Received a new connection from origin ' + request.origin + '.');
-
             const connection = request.accept(null, request.origin);
-
             clients[userID] = connection;
             console.log('connected: ' + userID + ' in ' + Object.getOwnPropertyNames(clients));
-
             connection.on('message', async function (message) {
-                //console.log(data)
                 if (message.type === 'utf8') {
+                    const input = JSON.parse(messazge.utf8Data);
 
-                    const input = JSON.parse(message.utf8Data);
-
-                    if (input["type"] == 'update') {
+                    if (input["day"] === "sameday") {
+                        data = dataDict["sameday"]
+                    } else {
+                        data = dataDict["nextday"]
+                    }
+                    if (input["type"] === 'update') {
                         let row = input["row"]
                         data[row] = input["data"]
-                    } else if (input["type"] == 'add') {
+                    } else if (input["type"] === 'add') {
                         data.push(input["data"])
                     } else if (input["type"] == 'delete') {
-
                         let row = input["row"]
-                        console.log(row)
                         data = input["data"]
                         const copy = [...data];
                         const arr_inf = copy.splice(copy, row)
-                        console.log("______________________")
-                        console.log("arr_inf antes")
-                        console.log(arr_inf)
-                        
-                        for (let i = row+1; i < data.length; i++) {
+
+                        for (let i = row + 1; i < data.length; i++) {
                             arr_inf.push(data[i])
-                            arr_inf[arr_inf.length - 1].id = arr_inf[arr_inf.length - 1].id = i 
+                            arr_inf[arr_inf.length - 1].id = arr_inf[arr_inf.length - 1].id = i
                         }
-                        console.log("----------------------")
-                        console.log("arr_inf despues")
-                        console.log(arr_inf)
-                        console.log("______________________")
-                        
+
+
 
                         data = arr_inf
-                        console.log("data")
-                        console.log(data)
+
                     }
 
                     for (key in clients) {
@@ -151,20 +145,18 @@ async function main() {
                             if (input["type"] == 'update') {
                                 let row = input["row"]
                                 const retorno = {
-
+                                    "day": input["day"],
                                     "type": "update",
                                     "data": data[row],
                                     "row": row
                                 }
 
-                                //console.log(data[row])
                                 clients[key].send(JSON.stringify(retorno));
 
 
                             } else if (input["type"] == 'conn') {
-                                //console.log("En Conn")
-                                //console.log(data)
                                 const retorno = {
+                                    "day": input["day"],
                                     "type": "conn",
                                     "data": data
                                 }
@@ -172,27 +164,23 @@ async function main() {
                             } else if (input["type"] == 'add') {
 
                                 const retorno = {
+                                    "day": input["day"],
                                     "type": "add",
                                     "data": input["data"],
                                     "row": input["row"]
                                 }
                                 //await updateData(client, "sameday", data)
-
-
-
-
                                 clients[key].send(JSON.stringify(retorno))
-                                console.log("--------------------------------------")
-                                console.log(clients[key].state)
-                                console.log("--------------------------------------")
+
                             } else if (input["type"] == 'delete') {
 
                                 const retorno = {
+                                    "day": input["day"],
                                     "type": "delete",
                                     "data": data
                                 }
 
-                                console.log(clients[key].send(JSON.stringify(retorno)))
+                                clients[key].send(JSON.stringify(retorno))
                                 //await updateData(client, "sameday", data)
 
 
@@ -200,11 +188,11 @@ async function main() {
                             //console.log("Al final")
 
 
-                        }else{
+                        } else {
                             delete clients[key]
                         }
                     }
-                    await updateData(client, "sameday", data)
+                    await updateData(client, input["day"], data)
 
 
                 }
