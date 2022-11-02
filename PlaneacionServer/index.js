@@ -1,9 +1,27 @@
+var express = require('express');
 const webSocketsServerPort = 8000;
 const webSocketServer = require('websocket').server;
-const { query } = require('express');
+var cookieParser = require('cookie-parser');
 const http = require('http');
+const cors = require("cors")
+
 const { MongoClient } = require('mongodb');
 require('dotenv').config()
+
+
+var router = require('./routes/router');
+const app = express()
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+app.use(cookieParser());
+app.use(cors({ origin: "*" }))
+app.use('/', router);
+
+
+var serverRest = http.createServer(app);
+serverRest.listen(8080)
+
 
 const url = `mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@mongodbtest.wrrye7l.mongodb.net/?retryWrites=true&w=majority`;
 
