@@ -4,10 +4,6 @@ const bcrypt = require('bcrypt')
 require('dotenv').config()
 const crypto = require("crypto")
 
-
-
-
-
 controller.login = async (req, res, next) => {
     // Insert Login Code Here
     let render = {
@@ -20,14 +16,13 @@ controller.login = async (req, res, next) => {
         connection.query(`SELECT * FROM planeacion.user where user.username='${req.body.username}';`, async (err, rows, fields) => {
             if (rows.length != 0) {
                 const log = await bcrypt.compare(req.body.password, rows[0].password);
-
                 if (log) {
                     render = {
                         "message": "Inicio Sesión con éxito",
                         "success": true,
-                        "token": hash
+                        "token": hash,
+                        "rol": rows[0].rol
                     }
-
                 } else {
                     render = { "message": "Clave incorrecta" };
                 }
@@ -42,9 +37,7 @@ controller.login = async (req, res, next) => {
             message: "Usuario o clave incorrectos"
         }))
     }
-
 }
-
 
 controller.register = async (req, res, next) => {
     var render = {
@@ -76,8 +69,5 @@ controller.register = async (req, res, next) => {
     }
 
 }
-
-
-
 
 module.exports = controller;
