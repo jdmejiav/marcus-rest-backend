@@ -101,10 +101,17 @@ async function main() {
                             arr_inf[arr_inf.length - 1].id = arr_inf[arr_inf.length - 1].id = i
                         }
                         data = arr_inf
+                    } else if (input["type"] === 'newday') {
+                        if (input["day"] == "sameday") {
+                            data = JSON.parse(JSON.stringify(dataDict["nextday"]))
+                            await updateData(client, "nextday", [])
+                        } else {
+                            await updateData(client, "sameday", JSON.parse(JSON.stringify(dataDict["nextday"])))
+                            data = []
+                        }
                     }
                     for (key in clients) {
                         if (clients[key].state === "open") {
-
                             if (input["type"] == 'update') {
                                 let row = input["row"]
                                 const retorno = {
@@ -113,10 +120,7 @@ async function main() {
                                     "data": data[row],
                                     "row": row
                                 }
-
                                 clients[key].send(JSON.stringify(retorno));
-
-
                             } else if (input["type"] == 'conn') {
                                 const retorno = {
                                     "day": input["day"],
@@ -146,7 +150,14 @@ async function main() {
                                 clients[key].send(JSON.stringify(retorno))
                                 //await updateData(client, "sameday", data)
 
-
+                            } else if (input["type"] == 'newday') {
+                                const retorno = {
+                                    "day": input["day"],
+                                    "data": data,
+                                    "type": "newday"
+                                }
+                                console.log("Lo que se manda ", retorno)
+                                clients[key].send(JSON.stringify(retorno))
                             }
                             //console.log("Al final")
                         } else {

@@ -5,7 +5,6 @@ require('dotenv').config()
 const crypto = require("crypto")
 
 controller.login = async (req, res, next) => {
-    // Insert Login Code Here
     let render = {
         message: "Usuario no encontrado",
         "success": false
@@ -67,7 +66,5 @@ controller.register = async (req, res, next) => {
         console.log(e)
         res.send(JSON.stringify(render))
     }
-
 }
-
 module.exports = controller;
