@@ -22,9 +22,11 @@ async function listDatabases(client) {
     databasesList.databases.forEach(db => console.log(` - ${db.name}`));
 };
 async function createListing(client, data) {
-    const result = await client.db("planeacion").collection("planeacion").insertOne({ _id: "sameday", "data": [] })
-    const result2 = await client.db("planeacion").collection("planeacion").insertOne({ _id: "nextday", "data": [] })
-    console.log(`New listing created with the following id: ${result}`)
+    //await client.db("planeacion").collection("planeacion").insertOne({ _id: "sameday", "data": [] })
+    //await client.db("planeacion").collection("planeacion").insertOne({ _id: "nextday", "data": [] })
+    await client.db("planeacion").collection("planeacion").insertOne({ _id: "moveHistSameDay", "data": [] })
+    await client.db("planeacion").collection("planeacion").insertOne({ _id: "moveHistNextDay", "data": [] })
+    //console.log(`New listing created with the following id: ${result}`)
 }
 async function main() {
     console.log(process.env.DB_USERNAME)
@@ -35,8 +37,8 @@ async function main() {
         console.log(`Connnected ${result}`)
         // Make the appropriate DB calls
         // Uncoment this line to create base collections 
-        // await createListing(client);
-        // await listDatabases(client);
+        //await createListing(client);
+        //await listDatabases(client);
         const wsServer = new webSocketServer({
             httpServer: server
         });
@@ -76,40 +78,107 @@ async function main() {
                 if (message.type === 'utf8') {
                     const input = JSON.parse(message.utf8Data);
                     var data = [];
+                    var moveHist = [];
                     var dataDict = {
                         sameday: await fetchData(client, "sameday"),
-                        nextday: await fetchData(client, "nextday")
+                        nextday: await fetchData(client, "nextday"),
+                        moveHistSameDay: await fetchData(client, "moveHistSameDay"),
+                        moveHistNextDay: await fetchData(client, "moveHistNextDay")
                     }
                     if (input["day"] === "sameday") {
+                        moveHist = dataDict["moveHistSameDay"]
                         data = dataDict["sameday"]
-                    } else {
+                    } else if (input["day"] === "nextday") {
+                        moveHist = dataDict["moveHistNextDay"]
                         data = await dataDict["nextday"]
                     }
                     if (input["type"] === 'update') {
+                        if (input["day"] === "sameday") {
+                            moveHist.push(data)
+                            if (moveHist.length > 10) {
+                                await updateData(client, "moveHistSameDay", moveHist.splice(1, 10))
+                            } else {
+                                await updateData(client, "moveHistSameDay", moveHist)
+                            }
+                        } else if (input["day"] === "nextday") {
+                            moveHist.push(data)
+                            if (moveHist.length > 10) {
+                                await updateData(client, "moveHistNextDay", moveHist.splice(1, 10))
+                            } else {
+                                await updateData(client, "moveHistNextDay", moveHist)
+                            }
+                        }
                         let row = input["row"]
                         data[row] = input["data"]
                     } else if (input["type"] === 'add') {
+                        if (input["day"] === "sameday") {
+                            moveHist.push(data)
+                            if (moveHist.length > 10) {
+                                await updateData(client, "moveHistSameDay", moveHist.splice(1, 10))
+                            } else {
+                                await updateData(client, "moveHistSameDay", moveHist)
+                            }
+                        } else if (input["day"] === "nextday") {
+                            moveHist.push(data)
+                            if (moveHist.length > 10) {
+                                await updateData(client, "moveHistNextDay", moveHist.splice(1, 10))
+                            } else {
+                                await updateData(client, "moveHistNextDay", moveHist)
+                                
+                            }
+                        }
                         data.push(input["data"])
-                    } else if (input["type"] == 'delete') {
+                    } else if (input["type"] === 'delete') {
+                        if (input["day"] === "sameday") {
+                            moveHist.push(data)
+                            if (moveHist.length > 10) {
+                                await updateData(client, "moveHistSameDay", moveHist.splice(1, 10))
+                            } else {
+                                await updateData(client, "moveHistSameDay", moveHist)
+                            }
+                        } else if (input["day"] === "nextday") {
+                            moveHist.push(data)
+                            if (moveHist.length > 10) {
+                                await updateData(client, "moveHistNextDay", moveHist.splice(1, 10))
+                            } else {
+                                await updateData(client, "moveHistNextDay", moveHist)
+                            }
+                        }
                         let row = input["row"]
                         data = input["data"]
                         const copy = [...data];
                         const arr_inf = copy.splice(copy, row)
-
                         for (let i = row + 1; i < data.length; i++) {
                             arr_inf.push(data[i])
                             arr_inf[arr_inf.length - 1].id = arr_inf[arr_inf.length - 1].id = i
                         }
                         data = arr_inf
-                    } else if (input["type"] === 'newday') {
+
+                    } else if (input["type"] == 'newday') {
+
+                        await updateData(client, "moveHistSameDay", [])
+                        await updateData(client, "moveHistNextDay", [])
+
                         if (input["day"] == "sameday") {
                             data = JSON.parse(JSON.stringify(dataDict["nextday"]))
                             await updateData(client, "nextday", [])
                         } else {
+                            await updateData(client, "moveHistSameDay", [])
+                            await updateData(client, "moveHistNextDay", [])
                             await updateData(client, "sameday", JSON.parse(JSON.stringify(dataDict["nextday"])))
                             data = []
                         }
+                    } else if (input["type"] === 'recoverHist') {
+                        if (moveHist.length > 0) {
+                            data = moveHist.pop()
+                            if (input["day"] == "sameday") {
+                                await updateData(client, "moveHistSameDay", moveHist)
+                            } else if (input["day"] == "nextday") {
+                                await updateData(client, "moveHistNextDay", moveHist)
+                            }
+                        }
                     }
+
                     for (key in clients) {
                         if (clients[key].state === "open") {
                             if (input["type"] == 'update') {
@@ -129,7 +198,6 @@ async function main() {
                                 }
                                 clients[key].send(JSON.stringify(retorno));
                             } else if (input["type"] == 'add') {
-
                                 const retorno = {
                                     "day": input["day"],
                                     "type": "add",
@@ -156,7 +224,16 @@ async function main() {
                                     "data": data,
                                     "type": "newday"
                                 }
-                                console.log("Lo que se manda ", retorno)
+
+                                clients[key].send(JSON.stringify(retorno))
+                            } else if (input["type"] == 'recoverHist') {
+
+                                const retorno = {
+                                    "day": input["day"],
+                                    "type": "recoverHist",
+                                    "data": data,
+                                }
+                                //await updateData(client, "sameday", data)
                                 clients[key].send(JSON.stringify(retorno))
                             }
                             //console.log("Al final")
