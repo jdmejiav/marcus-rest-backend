@@ -24,12 +24,12 @@ async function listDatabases(client) {
 async function createListing(client, data) {
     //await client.db("planeacion").collection("planeacion").insertOne({ _id: "sameday", "data": [] })
     //await client.db("planeacion").collection("planeacion").insertOne({ _id: "nextday", "data": [] })
-    await client.db("planeacion").collection("planeacion").insertOne({ _id: "moveHistSameDay", "data": [] })
-    await client.db("planeacion").collection("planeacion").insertOne({ _id: "moveHistNextDay", "data": [] })
+    //await client.db("planeacion").collection("planeacion").insertOne({ _id: "moveHistSameDay", "data": [] })
+    //await client.db("planeacion").collection("planeacion").insertOne({ _id: "moveHistNextDay", "data": [] })
+    await client.db("planeacion").collection("planeacion").insertOne({ _id: "recipes", "data": {} })
     //console.log(`New listing created with the following id: ${result}`)
 }
 async function main() {
-    console.log(process.env.DB_USERNAME)
     const client = new MongoClient(url);
     try {
         // Connect to the MongoDB cluster

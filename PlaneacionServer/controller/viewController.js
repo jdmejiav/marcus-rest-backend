@@ -3,7 +3,10 @@ const connection = require("../model/connection.js")
 const bcrypt = require('bcrypt')
 require('dotenv').config()
 const crypto = require("crypto")
+const { MongoClient } = require('mongodb');
 
+const url = `mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@mongodbtest.wrrye7l.mongodb.net/?retryWrites=true&w=majority`;
+const client = new MongoClient(url);
 controller.login = async (req, res, next) => {
     let render = {
         message: "Usuario no encontrado",
@@ -36,6 +39,45 @@ controller.login = async (req, res, next) => {
             message: "Usuario o clave incorrectos"
         }))
     }
+}
+
+controller.recipes = async (req, res, next) => {
+    const fetchData = async (client, list) => {
+        const result = await client.db("planeacion").collection("planeacion").findOne({ _id: list })
+        //console.log(`El resultado seria ${result}`)
+        return result.data
+    }
+    console.log(fetchData(client, "recipes"))
+    res.send(JSON.stringify(await fetchData(client, "recipes")))
+}
+
+controller.updateRecipe = async (req, res, next) => {
+    const fetchData = async (client, list) => {
+        const result = await client.db("planeacion").collection("planeacion").findOne({ _id: list })
+        //console.log(`El resultado seria ${result}`)
+        return result.data
+    }
+    const updateData = async (client, list, data) => {
+        await client.db("planeacion").collection("planeacion").updateOne(
+            {
+                _id: list
+            },
+            {
+                $set: {
+                    _id: list,
+                    data: data
+                }
+            }
+        )
+        return data
+    }
+    var recipes = await fetchData(client, "recipes")
+    const product = req.body.product;
+    const recipe = req.body.recipe;
+
+    recipes[product] = recipe
+
+    res.send(JSON.stringify(await updateData(client, "recipes", recipes)))
 }
 
 controller.register = async (req, res, next) => {
