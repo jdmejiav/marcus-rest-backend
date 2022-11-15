@@ -1,13 +1,102 @@
 const controller = {};
 const connection = require("../model/connection.js")
-const bcrypt = require('bcrypt')
-require('dotenv').config()
-const crypto = require("crypto")
-const { MongoClient } = require('mongodb');
+const bcrypt = require('bcrypt');
+require('dotenv').config();
+const crypto = require("crypto");
+const { Recipe, MoveHistSameDay, MoveHistNextDay, SameDay, NextDay } = require("../model/mongo")
 
-const url = `mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@mongodbtest.wrrye7l.mongodb.net/?retryWrites=true&w=majority`;
-const client = new MongoClient(url);
-controller.login = async (req, res, next) => {
+
+
+
+//CRUD
+
+
+
+// SAME DAY
+controller.addRowSameDay = async (req, res) => {
+    const sameDay = new SameDay({ ...req.body })
+    const insertSameDayRow = await sameDay.save()
+    return res.status(200).json(insertSameDayRow._id)
+}
+controller.getRowsSameDay = async (req, res) => {
+    const allRows = await SameDay.find();
+    return res.status(200).json(allRows)
+}
+controller.getRowSameDayById = async (req, res) => {
+    const { id } = req.params
+    const row = await SameDay.findById(id)
+    return res.status(200).json(row)
+}
+controller.updateRowSameDayById = async (req, res) => {
+    const { id } = req.params;
+    var rowUpdated = await SameDay.findOneAndUpdate({ _id: id }, req.body)
+    return res.status(200).json(rowUpdated._id)
+}
+controller.deleteRowSameDayById = async (req, res) => {
+    const { id } = req.params;
+    const deletedRow = await NextDay.findByIdAndDelete(id);
+    return res.status(200).json(deletedRow);
+}
+
+
+
+
+// NEXT DAY
+controller.addRowNextDay = async (req, res) => {
+    const NextDay = new NextDay({ ...req.body })
+    const insertNextDayRow = await NextDay.save()
+    return res.status(200).json(insertNextDayRow._id)
+}
+controller.getRowsNextDay = async (req, res) => {
+    const allRows = await NextDay.find();
+    return res.status(200).json(allRows)
+}
+controller.getRowNextDayById = async (req, res) => {
+    const { id } = req.params
+    const row = await NextDay.findById(id)
+    return res.status(200).json(row)
+}
+controller.updateRowNextDayById = async (req, res) => {
+    const { id } = req.params;
+    var rowUpdated = await NextDay.findOneAndUpdate({ _id: id }, req.body)
+    return res.status(200).json(rowUpdated._id)
+}
+controller.deleteRowNextDayById = async (req, res) => {
+    const { id } = req.params;
+    const deletedRow = await NextDay.findByIdAndDelete(id);
+    return res.status(200).json(deletedRow);
+}
+
+
+
+
+
+
+
+// RECIPES
+
+controller.addRecipe = async (req, res) => {
+    const recipe = new Recipe({ ...req.body })
+    const insertRecipe = await recipe.save()
+    return res.status(200).json(insertRecipe)
+}
+
+controller.recipes = async (req, res) => {
+    const allRecipes = await Recipe.find();
+    return res.status(200).json(allRecipes)
+}
+
+
+controller.deleteRecipe = async (req, res) => {
+    const { id } = req.params;
+    const deletedRecipe = await Recipe.findByIdAndDelete(id);
+    return res.status(200).json(deletedRecipe);
+}
+
+
+
+// Auth EndPoints
+controller.login = async (req, res) => {
     let render = {
         message: "Usuario no encontrado",
         "success": false
@@ -41,46 +130,8 @@ controller.login = async (req, res, next) => {
     }
 }
 
-controller.recipes = async (req, res, next) => {
-    const fetchData = async (client, list) => {
-        const result = await client.db("planeacion").collection("planeacion").findOne({ _id: list })
-        //console.log(`El resultado seria ${result}`)
-        return result.data
-    }
-    console.log(fetchData(client, "recipes"))
-    res.send(JSON.stringify(await fetchData(client, "recipes")))
-}
 
-controller.updateRecipe = async (req, res, next) => {
-    const fetchData = async (client, list) => {
-        const result = await client.db("planeacion").collection("planeacion").findOne({ _id: list })
-        //console.log(`El resultado seria ${result}`)
-        return result.data
-    }
-    const updateData = async (client, list, data) => {
-        await client.db("planeacion").collection("planeacion").updateOne(
-            {
-                _id: list
-            },
-            {
-                $set: {
-                    _id: list,
-                    data: data
-                }
-            }
-        )
-        return data
-    }
-    var recipes = await fetchData(client, "recipes")
-    const product = req.body.product;
-    const recipe = req.body.recipe;
-
-    recipes[product] = recipe
-
-    res.send(JSON.stringify(await updateData(client, "recipes", recipes)))
-}
-
-controller.register = async (req, res, next) => {
+controller.register = async (req, res) => {
     var render = {
         message: "Hubo un error",
         success: false
