@@ -12,7 +12,6 @@ app.use(cookieParser());
 app.use(cors({ origin: "*" }))
 app.use('/', router);
 
-
 const start = async () => {
     try {
         await mongoose.connect(

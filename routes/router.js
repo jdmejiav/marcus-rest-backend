@@ -3,24 +3,28 @@ const router = express.Router()
 const viewController = require("../controller/viewController.js")
 
 
+// Fetch WebFlowers
+router.get("/fetchWorkOrders", viewController.fetchWorkOrders)
+router.get("/fetchInventory", viewController.fetchInventory)
+
 // SameDay Routes
-router.delete("/deleteRowSameDay/:id", viewController.deleteRowSameDayById)
+router.delete("/sameday/deleteRow/:id", viewController.deleteRowSameDayById)
 
-router.get("/getRowSameDayById/:id", viewController.getRowSameDayById)
-router.get("/getRowsSameDay", viewController.getRowsSameDay)
+router.get("/sameday/getRowById/:id", viewController.getRowSameDayById)
+router.get("/sameday/getRows", viewController.getRowsSameDay)
 
-router.post("/addRowSameDay", viewController.addRowSameDay)
-router.post("/updateRowSameDay/:id", viewController.updateRowSameDayById)
+router.post("/sameday/addRow", viewController.addRowSameDay)
+router.post("/sameday/updateRow/:id", viewController.updateRowSameDayById)
 
 
 // NextDay Routes
-router.delete("/deleteRowNextDay/:id", viewController.deleteRowNextDayById)
+router.delete("/nextday/deleteRow/:id", viewController.deleteRowNextDayById)
 
-router.get("/getRowNextDayById/:id", viewController.getRowNextDayById)
-router.get("/getRowsNextDay", viewController.getRowsNextDay)
+router.get("/nextday/getRowById/:id", viewController.getRowNextDayById)
+router.get("/nextday/getRows", viewController.getRowsNextDay)
 
-router.post("/addRowNextDay", viewController.addRowNextDay)
-router.post("/updateRowNextDay/:id", viewController.updateRowNextDayById)
+router.post("/nextday/addRow", viewController.addRowNextDay)
+router.post("/nextday/updateRow/:id", viewController.updateRowNextDayById)
 
 
 
