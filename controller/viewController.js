@@ -48,7 +48,160 @@ controller.fetchWorkOrders = async (req, res) => {
     return res.status(200).json(workOrders)
 }
 
+
+
+
+
+
 controller.fetchInventory = async (req, res) => {
+
+    let retorno = {}
+    let customers = {}
+    let products = {}
+    await AxiosInstance.get(`/Inventory/GetProductInventoryHistory/BQC/0`)
+        .then(async res => {
+            const data = res.data
+            data.forEach((val) => {
+                if (!(val.customer in customers)) {
+                    customers[val.customer] = "1"
+                }
+                if (products[val.name] != undefined) {
+                    let boxCode = val.boxCode.replace(/\s/g, '')
+                    if (products[val.name][val.poId + boxCode.charAt(boxCode.length - 1)] == undefined) {
+                        products[val.name][val.poId + boxCode.charAt(boxCode.length - 1)] = {
+                            po: val.poId,
+                            age: val.age,
+                            numBoxes: Number.parseInt(val.boxes),
+                            boxType: val.boxCode.replace(/\s/g, ''),
+                            customer: val.customer,
+                            reference: val.reference
+                        }
+                    } else {
+                        let copy = products[val.name][val.poId + boxCode.charAt(boxCode.length - 1)]
+                        products[val.name][val.poId + boxCode.charAt(boxCode.length - 1)].numBoxes = Number.parseInt(copy.numBoxes) + Number.parseInt(val.boxes)
+                    }
+                } else {
+                    let boxCode = val.boxCode.replace(/\s/g, '')
+                    products[val.name] = {}
+                    products[val.name][val.poId + boxCode.charAt(boxCode.length - 1)] = {
+                        po: val.poId,
+                        age: val.age,
+                        numBoxes: Number.parseInt(val.boxes),
+                        boxType: val.boxCode.replace(/\s/g, ''),
+                        customer: val.customer,
+                        reference: val.reference
+                    }
+                }
+                if (products[val.customer] != undefined) {
+                    let boxCode = val.boxCode.replace(/\s/g, '')
+                    if (products[val.customer][val.poId + val.reference.split(" ")[0] + boxCode.charAt(boxCode.length - 1)] == undefined) {
+                        products[val.customer][val.poId + val.reference.split(" ")[0] + boxCode.charAt(boxCode.length - 1)] = {
+                            po: val.poId + val.reference.split(" ")[0],
+                            age: val.age,
+                            numBoxes: Number.parseInt(val.boxes),
+                            boxType: val.boxCode.replace(/\s/g, ''),
+                            customer: val.customer,
+                            reference: val.reference
+                        }
+                    } else {
+                        let copy = products[val.customer][val.poId + val.reference.split(" ")[0] + boxCode.charAt(boxCode.length - 1)]
+                        products[val.customer][val.poId + val.reference.split(" ")[0] + boxCode.charAt(boxCode.length - 1)].numBoxes = Number.parseInt(copy.numBoxes) + Number.parseInt(val.boxes)
+                    }
+                } else {
+                    let boxCode = val.boxCode.replace(/\s/g, '')
+                    products[val.customer] = {}
+                    products[val.customer][val.poId + val.reference.split(" ")[0] + boxCode.charAt(boxCode.length - 1)] = {
+                        po: val.poId + val.reference.split(" ")[0],
+                        age: val.age,
+                        numBoxes: Number.parseInt(val.boxes),
+                        boxType: val.boxCode.replace(/\s/g, ''),
+                        customer: val.customer,
+                        reference: val.reference
+                    }
+                }
+            })
+        }).catch(error => console.log('error', error));
+
+
+    let begin = new Date()
+    let end = new Date()
+
+    await AxiosInstance.get("/Procurement/GetPurchaseProducts/BQC/All", {
+        params: {
+            DateFrom: moment(begin).format("YYYY-MM-DD"),
+            DateTo: moment(end).format("YYYY-MM-DD"),
+            DateType: "DueDate"
+        }
+    }).then(res => {
+        const data = res.data
+        data.forEach((val) => {
+            if (!(val.customer in customers)) {
+                customers[val.customer] = "1"
+            }
+            if (products[val.productName] != undefined) {
+                let boxCode = val.boxCode.replace(/\s/g, '')
+                if (products[val.productName][val.poNumber + boxCode.charAt(boxCode.length - 1)] == undefined) {
+                    products[val.productName][val.poNumber + boxCode.charAt(boxCode.length - 1)] = {
+                        po: val.poNumber,
+                        age: "NR",
+                        numBoxes: Number.parseInt(val.boxes),
+                        boxType: val.boxCode.replace(/\s/g, ''),
+                        customer: val.customer,
+                        reference: val.reference
+                    }
+                } else {
+                    let copy = products[val.productName][val.poNumber + boxCode.charAt(boxCode.length - 1)]
+                    products[val.productName][val.poNumber + boxCode.charAt(boxCode.length - 1)].numBoxes = Number.parseInt(copy.numBoxes) + Number.parseInt(val.boxes)
+                }
+            } else {
+                let boxCode = val.boxCode.replace(/\s/g, '')
+                products[val.productName] = {}
+                products[val.productName][val.poNumber + boxCode.charAt(boxCode.length - 1)] = {
+                    po: val.poNumber,
+                    age: "NR",
+                    numBoxes: Number.parseInt(val.boxes),
+                    boxType: val.boxCode.replace(/\s/g, ''),
+                    customer: val.customer,
+                    reference: val.reference
+                }
+            }
+            if (products[val.customer] != undefined) {
+                let boxCode = val.boxCode.replace(/\s/g, '')
+                if (products[val.customer][val.poNumber + val.reference.split(" ")[0] + boxCode.charAt(boxCode.length - 1)] == undefined) {
+                    products[val.customer][val.poNumber + val.reference.split(" ")[0] + boxCode.charAt(boxCode.length - 1)] = {
+                        po: val.poNumber + val.reference.split(" ")[0],
+                        age: "NR",
+                        numBoxes: Number.parseInt(val.boxes),
+                        boxType: val.boxCode.replace(/\s/g, ''),
+                        customer: val.customer,
+                        reference: val.reference
+                    }
+                } else {
+                    let copy = products[val.customer][val.poNumber + val.reference.split(" ")[0] + boxCode.charAt(boxCode.length - 1)]
+                    products[val.customer][val.poNumber + val.reference.split(" ")[0] + boxCode.charAt(boxCode.length - 1)].numBoxes = Number.parseInt(copy.numBoxes) + Number.parseInt(val.boxes)
+                }
+            } else {
+                let boxCode = val.boxCode.replace(/\s/g, '')
+                products[val.customer] = {}
+                products[val.customer][val.poNumber + val.reference.split(" ")[0] + boxCode.charAt(boxCode.length - 1)] = {
+                    po: val.poNumber + val.reference.split(" ")[0] + val.reference.split(" ")[0],
+                    age: "NR",
+                    numBoxes: Number.parseInt(val.boxes),
+                    boxType: val.boxCode.replace(/\s/g, ''),
+                    customer: val.customer,
+                    reference: val.reference
+                }
+            }
+        })
+    }).catch(err => console.log(err))
+
+
+    retorno.items = products
+    retorno.customers = Object.keys(customers)
+    return res.status(200).json(retorno)
+
+}
+controller.fetchInventoryLegacy = async (req, res) => {
     let retorno = {}
     await AxiosInstance.get(`/Inventory/GetProductInventoryHistory/BQC/0`)
         .then(async res => {
@@ -56,10 +209,6 @@ controller.fetchInventory = async (req, res) => {
             let customers = {}
             let products = {}
             data.forEach((val) => {
-
-                if (val.poId == "112816") {
-                    console.log("En 1: ", val)
-                }
                 if (!(val.customer in customers)) {
                     customers[val.customer] = "1"
                 }
@@ -125,12 +274,13 @@ controller.fetchInventory = async (req, res) => {
             })
             let begin = new Date()
             let end = new Date()
-            end.setDate(end.getDate() + 1)
+            //end.setDate(end.getDate() + 1)
 
-            await AxiosInstance.get("/Inventory/GetProductInventoryHistory/BQC/0", {
+            await AxiosInstance.get("/Procurement/GetPurchaseProducts/BQC/All", {
                 params: {
-                    dateFrom: moment(begin).format("YYYY-MM-DD"),
-                    dateTo: moment(end).format("YYYY-MM-DD")
+                    DateFrom: moment(begin).format("YYYY-MM-DD"),
+                    DateTo: moment(end).format("YYYY-MM-DD"),
+                    DateType: "DueDate"
                 }
             }).then(res => {
                 const data = res.data
@@ -143,7 +293,7 @@ controller.fetchInventory = async (req, res) => {
                             const arrTemp = products[val.productName].poDetails;
                             arrTemp.push({
                                 po: val.poNumber,
-                                age: "N.R",
+                                age: "NR",
                                 numBoxes: val.pack,
                                 boxType: val.boxCode.replace(/\s/g, ''),
                                 customer: val.customer,
@@ -157,7 +307,7 @@ controller.fetchInventory = async (req, res) => {
                             products[val.productName] = {
                                 poDetails: Array({
                                     po: val.poNumber,
-                                    age: "N.R",
+                                    age: "NR",
                                     numBoxes: Number.parseInt(val.pack),
                                     boxType: val.boxCode.replace(/\s/g, ''),
                                     customer: val.customer,
@@ -168,11 +318,10 @@ controller.fetchInventory = async (req, res) => {
                             }
                         }
                         if (val.customer in products) {
-
                             const arrTemp = products[val.customer].poDetails;
                             arrTemp.push({
                                 po: val.poNumber + val.reference.split(" ")[0],
-                                age: "N.R",
+                                age: "NR",
                                 numBoxes: val.pack,
                                 boxType: val.boxCode.replace(/\s/g, ''),
                                 customer: val.customer,
@@ -186,7 +335,7 @@ controller.fetchInventory = async (req, res) => {
                             products[val.customer] = {
                                 poDetails: Array({
                                     po: val.poNumber + val.reference.split(" ")[0],
-                                    age: "N.R",
+                                    age: "NR",
                                     numBoxes: Number.parseInt(val.pack),
                                     boxType: val.boxCode.replace(/\s/g, ''),
                                     customer: val.customer,
