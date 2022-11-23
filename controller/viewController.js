@@ -18,7 +18,6 @@ const AxiosInstance = axios.create({
     }
 })
 
-
 //Fetch WebFlowers
 
 controller.fetchWorkOrders = async (req, res) => {
@@ -57,6 +56,10 @@ controller.fetchInventory = async (req, res) => {
             let customers = {}
             let products = {}
             data.forEach((val) => {
+                
+                if (val.poId=="112816"){
+                    console.log("En 1: ", val)
+                }
                 if (!(val.customer in customers)) {
                     customers[val.customer] = "1"
                 }
@@ -88,11 +91,42 @@ controller.fetchInventory = async (req, res) => {
                         numBoxes: val.boxes
                     }
                 }
+
+                if (val.customer in products) {
+
+                    const arrTemp = products[val.customer].poDetails;
+
+                    arrTemp.push({
+                        po: val.poId + val.reference.split(" ")[0],
+                        age: val.age,
+                        numBoxes: val.boxes,
+                        boxType: val.boxCode.replace(/\s/g, ''),
+                        customer: val.customer,
+                        reference: val.reference
+                    })
+                    products[val.customer] = {
+                        poDetails: arrTemp,
+                        numBoxes: Number.parseInt(products[val.customer].numBoxes) + Number.parseInt(val.boxes)
+                    }
+                } else {
+                    products[val.customer] = {
+                        poDetails: Array({
+                            po: val.poId + val.reference.split(" ")[0],
+                            age: val.age,
+                            numBoxes: Number.parseInt(val.boxes),
+                            boxType: val.boxCode.replace(/\s/g, ''),
+                            customer: val.customer,
+                            reference: val.reference
+                        }),
+                        name: val.name,
+                        numBoxes: val.boxes
+                    }
+                }
             })
             let begin = new Date()
             let end = new Date()
             end.setDate(end.getDate() + 1)
-            
+
             await AxiosInstance.get("/Inventory/GetProductInventoryHistory/BQC/0", {
                 params: {
                     dateFrom: moment(begin).format("YYYY-MM-DD"),
@@ -133,6 +167,35 @@ controller.fetchInventory = async (req, res) => {
                                 numBoxes: val.pack
                             }
                         }
+                        if (val.customer in products) {
+
+                            const arrTemp = products[val.customer].poDetails;
+                            arrTemp.push({
+                                po: val.poNumber + val.reference.split(" ")[0],
+                                age: "N.R",
+                                numBoxes: val.pack,
+                                boxType: val.boxCode.replace(/\s/g, ''),
+                                customer: val.customer,
+                                reference: val.reference
+                            })
+                            products[val.customer] = {
+                                poDetails: arrTemp,
+                                numBoxes: Number.parseInt(products[val.productName].numBoxes) + Number.parseInt(val.pack)
+                            }
+                        } else {
+                            products[val.customer] = {
+                                poDetails: Array({
+                                    po: val.poNumber + val.reference.split(" ")[0],
+                                    age: "N.R",
+                                    numBoxes: Number.parseInt(val.pack),
+                                    boxType: val.boxCode.replace(/\s/g, ''),
+                                    customer: val.customer,
+                                    reference: val.reference
+                                }),
+                                name: val.productName,
+                                numBoxes: val.pack
+                            }
+                        }
                     }
                 })
                 retorno.items = products
@@ -140,12 +203,36 @@ controller.fetchInventory = async (req, res) => {
             }).catch(error => console.log('error', error));
         }).catch(error => console.log('error', error));
 
-        return res.status(200).json(retorno)
+    return res.status(200).json(retorno)
 }
 
+// OPERATION ROUTES
+
+controller.moveDay = async (req, res) => {
+    let { id, date } = req.body;
+    let row = JSON.parse(JSON.stringify(await SameDay.findById(id)))
+    let allRows = await NextDay.find()
+    row.date = date
+    delete row._id
+    row.id = allRows[allRows.length - 1] === undefined ? 1 : allRows[allRows.length - 1].id + 1
+    const rowMoved = new NextDay({ ...row })
+    const insertNextDayRow = await rowMoved.save()
+    await SameDay.findByIdAndDelete(id)
+    return res.status(200).json(insertNextDayRow)
+}
+
+controller.newDay = async (req, res) => {
+    const newDay = await SameDay.deleteMany({}).then(async () => await NextDay.find())
+
+    newDay.map(async item => {
+        let temp = JSON.parse(JSON.stringify(item))
+        delete temp._id
+        await SameDay.create(temp)
+    })
+    await NextDay.deleteMany({})
+    return res.status(200).json(newDay)
+}
 //CRUD
-
-
 
 // SAME DAY
 controller.addRowSameDay = async (req, res) => {
@@ -173,13 +260,10 @@ controller.deleteRowSameDayById = async (req, res) => {
     return res.status(200).json(deletedRow);
 }
 
-
-
-
 // NEXT DAY
 controller.addRowNextDay = async (req, res) => {
-    const NextDay = new NextDay({ ...req.body })
-    const insertNextDayRow = await NextDay.save()
+    const nextDay = new NextDay({ ...req.body })
+    const insertNextDayRow = await nextDay.save()
     return res.status(200).json(insertNextDayRow)
 }
 controller.getRowsNextDay = async (req, res) => {
@@ -202,11 +286,63 @@ controller.deleteRowNextDayById = async (req, res) => {
     return res.status(200).json(deletedRow);
 }
 
+// MOVE HIST SAME DAY
 
+controller.addMovementSameDay = async (req, res) => {
+    let allRows = JSON.parse(JSON.stringify(await SameDay.find()))
+    let movement = { moveHistSameDay: allRows }
+    let moveHistSameDay = await MoveHistSameDay.create(movement)
+    return res.status(200).json(moveHistSameDay)
+}
 
+controller.getMovementHistSameDay = async (req, res) => {
+    let movements = await MoveHistSameDay.find();
+    return res.status(200).json(movements)
+}
 
+controller.popMovementSameDay = async (req, res) => {
+    let movement = await MoveHistSameDay.findOneAndDelete(
+        { "field": "a" },
+        { "sort": { "_id": -1 } }
+    )
+    if (movement != null) {
+        const rows = await SameDay.deleteMany({})
+        movement.moveHistSameDay.forEach(async item => {
+            let newRow = JSON.parse(JSON.stringify(item));
+            await SameDay.create(newRow);
+        })
+    }
+    return res.status(200).json(movement)
+}
 
+//MOVE HIST NEXTDAY
 
+controller.addMovementNextDay = async (req, res) => {
+    let allRows = JSON.parse(JSON.stringify(await NextDay.find()))
+    let movement = { moveHistNextDay: allRows }
+    let moveHistNextDay = await MoveHistNextDay.create(movement)
+    return res.status(200).json(moveHistNextDay)
+}
+
+controller.getMovementHistNextDay = async (req, res) => {
+    let movements = await MoveHistNextDay.find();
+    return res.status(200).json(movements)
+}
+
+controller.popMovementNextDay = async (req, res) => {
+    let movement = await MoveHistNextDay.findOneAndDelete(
+        { "field": "a" },
+        { "sort": { "_id": -1 } }
+    )
+    if (movement != null) {
+        const rows = await NextDay.deleteMany({})
+        awaitmovement.moveHistNextDay.forEach(async item => {
+            let newRow = JSON.parse(JSON.stringify(item));
+            await NextDay.create(newRow);
+        })
+    }
+    return res.status(200).json(movement)
+}
 
 // RECIPES
 
@@ -216,9 +352,18 @@ controller.addRecipe = async (req, res) => {
     return res.status(200).json(insertRecipe)
 }
 
-controller.recipes = async (req, res) => {
+controller.getRecipes = async (req, res) => {
     const allRecipes = await Recipe.find();
-    return res.status(200).json(allRecipes)
+    let retorno = {}
+    allRecipes.forEach(item => {
+        retorno[item.product] = {
+            product: item.product,
+            wp: item.wp,
+            dry: item.dry,
+            _id: item._id
+        }
+    })
+    return res.status(200).json(retorno)
 }
 
 
@@ -227,8 +372,6 @@ controller.deleteRecipe = async (req, res) => {
     const deletedRecipe = await Recipe.findByIdAndDelete(id);
     return res.status(200).json(deletedRecipe);
 }
-
-
 
 // Auth EndPoints
 controller.login = async (req, res) => {

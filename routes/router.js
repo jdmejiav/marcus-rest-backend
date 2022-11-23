@@ -7,6 +7,11 @@ const viewController = require("../controller/viewController.js")
 router.get("/fetchWorkOrders", viewController.fetchWorkOrders)
 router.get("/fetchInventory", viewController.fetchInventory)
 
+// Operations Routes
+router.get("/newDay", viewController.newDay)
+
+router.post("/moveDay", viewController.moveDay)
+
 // SameDay Routes
 router.delete("/sameday/deleteRow/:id", viewController.deleteRowSameDayById)
 
@@ -15,7 +20,6 @@ router.get("/sameday/getRows", viewController.getRowsSameDay)
 
 router.post("/sameday/addRow", viewController.addRowSameDay)
 router.post("/sameday/updateRow/:id", viewController.updateRowSameDayById)
-
 
 // NextDay Routes
 router.delete("/nextday/deleteRow/:id", viewController.deleteRowNextDayById)
@@ -26,28 +30,29 @@ router.get("/nextday/getRows", viewController.getRowsNextDay)
 router.post("/nextday/addRow", viewController.addRowNextDay)
 router.post("/nextday/updateRow/:id", viewController.updateRowNextDayById)
 
+// MoveHist SameDay Routes
+router.get("/sameday/getMovementHist", viewController.getMovementHistSameDay)
+router.get("/sameday/popMovement", viewController.popMovementSameDay)
 
+router.post("/sameday/addMovement", viewController.addMovementSameDay)
 
+//RECIPES ROUTES
+router.delete("/deleteRecipe/:id", viewController.deleteRecipe)
 
+router.get("/getRecipes", viewController.getRecipes)
 
-
-
-
-
-
-
-
-
-
-
-router.get("/recipes", viewController.recipes)
 router.post("/addRecipe", viewController.addRecipe)
+
+
+
+
+//AUTH ROUTES
 router.post("/login", viewController.login)
 router.post("/register", viewController.register)
 
 
 
-router.delete("/deleterecipe/:id", viewController.deleteRecipe)
+
 
 
 
