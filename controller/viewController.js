@@ -56,8 +56,8 @@ controller.fetchInventory = async (req, res) => {
             let customers = {}
             let products = {}
             data.forEach((val) => {
-                
-                if (val.poId=="112816"){
+
+                if (val.poId == "112816") {
                     console.log("En 1: ", val)
                 }
                 if (!(val.customer in customers)) {
@@ -364,6 +364,12 @@ controller.getRecipes = async (req, res) => {
         }
     })
     return res.status(200).json(retorno)
+}
+
+controller.updateRecipeById = async (req, res) => {
+    const { id } = req.params;
+    var recipe = await Recipe.findOneAndUpdate({ _id: id }, req.body)
+    return res.status(200).json(recipe)
 }
 
 

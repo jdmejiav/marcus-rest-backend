@@ -42,7 +42,7 @@ router.delete("/deleteRecipe/:id", viewController.deleteRecipe)
 router.get("/getRecipes", viewController.getRecipes)
 
 router.post("/addRecipe", viewController.addRecipe)
-
+router.post("/updateRecipe/:id", viewController.updateRecipeById)
 
 
 
