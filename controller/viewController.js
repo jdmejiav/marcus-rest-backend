@@ -54,7 +54,6 @@ controller.fetchWorkOrders = async (req, res) => {
 
 
 controller.fetchInventory = async (req, res) => {
-
     let retorno = {}
     let customers = {}
     let products = {}
@@ -74,7 +73,8 @@ controller.fetchInventory = async (req, res) => {
                             numBoxes: Number.parseInt(val.boxes),
                             boxType: val.boxCode.replace(/\s/g, ''),
                             customer: val.customer,
-                            reference: val.reference
+                            reference: val.reference,
+                            pack: val.pack
                         }
                     } else {
                         let copy = products[val.name][val.poId + boxCode.charAt(boxCode.length - 1)]
@@ -89,7 +89,8 @@ controller.fetchInventory = async (req, res) => {
                         numBoxes: Number.parseInt(val.boxes),
                         boxType: val.boxCode.replace(/\s/g, ''),
                         customer: val.customer,
-                        reference: val.reference
+                        reference: val.reference,
+                        pack: val.pack
                     }
                 }
                 if (products[val.customer] != undefined) {
@@ -101,7 +102,8 @@ controller.fetchInventory = async (req, res) => {
                             numBoxes: Number.parseInt(val.boxes),
                             boxType: val.boxCode.replace(/\s/g, ''),
                             customer: val.customer,
-                            reference: val.reference
+                            reference: val.reference,
+                            pack: val.pack
                         }
                     } else {
                         let copy = products[val.customer][val.poId + val.reference.split(" ")[0] + boxCode.charAt(boxCode.length - 1)]
@@ -116,7 +118,8 @@ controller.fetchInventory = async (req, res) => {
                         numBoxes: Number.parseInt(val.boxes),
                         boxType: val.boxCode.replace(/\s/g, ''),
                         customer: val.customer,
-                        reference: val.reference
+                        reference: val.reference,
+                        pack: val.pack
                     }
                 }
             })
@@ -147,7 +150,8 @@ controller.fetchInventory = async (req, res) => {
                         numBoxes: Number.parseInt(val.boxes),
                         boxType: val.boxCode.replace(/\s/g, ''),
                         customer: val.customer,
-                        reference: val.reference
+                        reference: val.reference,
+                        pack: val.pack
                     }
                 } else {
                     let copy = products[val.productName][val.poNumber + boxCode.charAt(boxCode.length - 1)]
@@ -162,7 +166,8 @@ controller.fetchInventory = async (req, res) => {
                     numBoxes: Number.parseInt(val.boxes),
                     boxType: val.boxCode.replace(/\s/g, ''),
                     customer: val.customer,
-                    reference: val.reference
+                    reference: val.reference,
+                    pack: val.pack
                 }
             }
             if (products[val.customer] != undefined) {
@@ -174,7 +179,8 @@ controller.fetchInventory = async (req, res) => {
                         numBoxes: Number.parseInt(val.boxes),
                         boxType: val.boxCode.replace(/\s/g, ''),
                         customer: val.customer,
-                        reference: val.reference
+                        reference: val.reference,
+                        pack: val.pack
                     }
                 } else {
                     let copy = products[val.customer][val.poNumber + val.reference.split(" ")[0] + boxCode.charAt(boxCode.length - 1)]
@@ -189,13 +195,12 @@ controller.fetchInventory = async (req, res) => {
                     numBoxes: Number.parseInt(val.boxes),
                     boxType: val.boxCode.replace(/\s/g, ''),
                     customer: val.customer,
-                    reference: val.reference
+                    reference: val.reference,
+                    pack: val.pack
                 }
             }
         })
     }).catch(err => console.log(err))
-
-
     retorno.items = products
     retorno.customers = Object.keys(customers)
     return res.status(200).json(retorno)
@@ -297,7 +302,8 @@ controller.fetchInventoryLegacy = async (req, res) => {
                                 numBoxes: val.pack,
                                 boxType: val.boxCode.replace(/\s/g, ''),
                                 customer: val.customer,
-                                reference: val.reference
+                                reference: val.reference,
+                                pack: val.pack
                             })
                             products[val.productName] = {
                                 poDetails: arrTemp,
@@ -311,7 +317,8 @@ controller.fetchInventoryLegacy = async (req, res) => {
                                     numBoxes: Number.parseInt(val.pack),
                                     boxType: val.boxCode.replace(/\s/g, ''),
                                     customer: val.customer,
-                                    reference: val.reference
+                                    reference: val.reference,
+                                    pack: val.pack
                                 }),
                                 name: val.productName,
                                 numBoxes: val.pack
@@ -325,7 +332,8 @@ controller.fetchInventoryLegacy = async (req, res) => {
                                 numBoxes: val.pack,
                                 boxType: val.boxCode.replace(/\s/g, ''),
                                 customer: val.customer,
-                                reference: val.reference
+                                reference: val.reference,
+                                pack: val.pack
                             })
                             products[val.customer] = {
                                 poDetails: arrTemp,
@@ -339,7 +347,8 @@ controller.fetchInventoryLegacy = async (req, res) => {
                                     numBoxes: Number.parseInt(val.pack),
                                     boxType: val.boxCode.replace(/\s/g, ''),
                                     customer: val.customer,
-                                    reference: val.reference
+                                    reference: val.reference,
+                                    pack: val.pack
                                 }),
                                 name: val.productName,
                                 numBoxes: val.pack
@@ -373,7 +382,7 @@ controller.moveDay = async (req, res) => {
 controller.newDay = async (req, res) => {
     const newDay = await SameDay.deleteMany({}).then(async () => await NextDay.find())
 
-    newDay.map(async item => {
+    newDay.reverse().map(async item => {
         let temp = JSON.parse(JSON.stringify(item))
         delete temp._id
         await SameDay.create(temp)
@@ -535,7 +544,7 @@ controller.login = async (req, res) => {
         "success": false
     }
     const hash = crypto.randomBytes(64).toString('hex')
-    console.log(hash)
+    console.log("Hash ", hash)
     try {
         connection.query(`SELECT * FROM planeacion.user where user.username='${req.body.username}';`, async (err, rows, fields) => {
             if (rows.length != 0) {
