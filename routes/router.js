@@ -6,6 +6,8 @@ const viewController = require("../controller/viewController.js")
 // Fetch WebFlowers
 router.get("/fetchWorkOrders", viewController.fetchWorkOrders)
 router.get("/fetchInventory", viewController.fetchInventory)
+router.get("/refreshInventory", viewController.refreshInventory)
+router.get("/getInventory", viewController.getInventory)
 
 // Operations Routes
 router.get("/newDay", viewController.newDay)

@@ -16,6 +16,10 @@ const RecipeSchema = new mongoose.Schema({
     }
 })
 
+const InventorySchema = new mongoose.Schema({
+    inventory: Map
+})
+
 const MoveHistSameDaySchema = new mongoose.Schema({
     moveHistSameDay: [[]]
 })
@@ -75,9 +79,10 @@ const SamedaySchema = new mongoose.Schema({
 })
 
 const Recipe = mongoose.model("Recipe", RecipeSchema)
+const Inventory = mongoose.model("Inventory", InventorySchema)
 const MoveHistSameDay = mongoose.model("MoveHistSameDay", MoveHistSameDaySchema)
 const MoveHistNextDay = mongoose.model("MoveHistNextDay", MoveHistNextDaySchema)
 const SameDay = mongoose.model("SameDay", SamedaySchema)
 const NextDay = mongoose.model("NextDay", NextdaySchema)
 
-module.exports = { Recipe, MoveHistSameDay, MoveHistNextDay, SameDay, NextDay }
+module.exports = { Recipe, MoveHistSameDay, MoveHistNextDay, SameDay, NextDay, Inventory }
