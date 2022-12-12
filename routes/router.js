@@ -7,7 +7,7 @@ const viewController = require("../controller/viewController.js")
 router.get("/fetchWorkOrders", viewController.fetchWorkOrders)
 router.get("/fetchInventory", viewController.fetchInventory)
 router.get("/refreshInventory", viewController.refreshInventory)
-router.get("/getInventory", viewController.getInventory)
+router.get("/getInventory", viewController.fetchInventory)
 
 // Operations Routes
 router.get("/newDay", viewController.newDay)

@@ -53,10 +53,10 @@ controller.fetchWorkOrders = async (req, res) => {
     }
 }
 
-controller.getInventory = async (req, res) => {
+controller.fetchInventory = async (req, res) => {
     try {
         const inventory = await Inventory.find()
-        return res.status(200).json(inventory[0]);
+        return res.status(200).json(inventory[0].inventory);
     }
     catch (err) {
         console.log(err)
@@ -74,6 +74,7 @@ controller.refreshInventory = async (req, res) => {
             .then(async res => {
                 const data = res.data
                 data.forEach((val) => {
+
                     if (!(val.customer in customers)) {
                         customers[val.customer] = "1"
                     }
@@ -90,6 +91,7 @@ controller.refreshInventory = async (req, res) => {
                                 pack: val.pack
                             }
                         } else {
+
                             let copy = products[val.name][val.poId + boxCode.charAt(boxCode.length - 1)]
                             products[val.name][val.poId + boxCode.charAt(boxCode.length - 1)].numBoxes = Number.parseInt(copy.numBoxes) + Number.parseInt(val.boxes)
                         }
@@ -135,10 +137,9 @@ controller.refreshInventory = async (req, res) => {
                             pack: val.pack
                         }
                     }
+
                 })
             }).catch(error => console.log('error', error));
-
-
         let begin = new Date()
         let end = new Date()
 
@@ -166,7 +167,7 @@ controller.refreshInventory = async (req, res) => {
                             reference: val.reference,
                             pack: val.pack
                         }
-                    } else {
+                    } else if (products[val.productName][val.poNumber + boxCode.charAt(boxCode.length - 1)].age === "NR") {
                         let copy = products[val.productName][val.poNumber + boxCode.charAt(boxCode.length - 1)]
                         products[val.productName][val.poNumber + boxCode.charAt(boxCode.length - 1)].numBoxes = Number.parseInt(copy.numBoxes) + Number.parseInt(val.boxes)
                     }
@@ -195,7 +196,7 @@ controller.refreshInventory = async (req, res) => {
                             reference: val.reference,
                             pack: val.pack
                         }
-                    } else {
+                    } else if (products[val.customer][val.poNumber + val.reference.split(" ")[0] + boxCode.charAt(boxCode.length - 1)].age === "NR") {
                         let copy = products[val.customer][val.poNumber + val.reference.split(" ")[0] + boxCode.charAt(boxCode.length - 1)]
                         products[val.customer][val.poNumber + val.reference.split(" ")[0] + boxCode.charAt(boxCode.length - 1)].numBoxes = Number.parseInt(copy.numBoxes) + Number.parseInt(val.boxes)
                     }
@@ -217,7 +218,8 @@ controller.refreshInventory = async (req, res) => {
         retorno.items = products
         retorno.customers = Object.keys(customers)
         const inventory = await Inventory.create({ inventory: retorno })
-        return res.status(200).json(inventory)
+        //console.log(products["BH EURO BQT WINTER"]["114079F"])
+        return res.status(200).json(inventory.inventory)
     }
     catch (err) {
         console.log(err)
@@ -225,10 +227,7 @@ controller.refreshInventory = async (req, res) => {
     }
 }
 
-
-
-
-controller.fetchInventory = async (req, res) => {
+controller.fetchInventoryLegacy = async (req, res) => {
     try {
         let retorno = {}
         let customers = {}
@@ -243,6 +242,7 @@ controller.fetchInventory = async (req, res) => {
                     if (products[val.name] != undefined) {
                         let boxCode = val.boxCode.replace(/\s/g, '')
                         if (products[val.name][val.poId + boxCode.charAt(boxCode.length - 1)] == undefined) {
+
                             products[val.name][val.poId + boxCode.charAt(boxCode.length - 1)] = {
                                 po: val.poId,
                                 age: val.age,
@@ -387,7 +387,7 @@ controller.fetchInventory = async (req, res) => {
     }
 
 }
-controller.fetchInventoryLegacy = async (req, res) => {
+controller.fetchInventoryLegacyDeprecated = async (req, res) => {
     try {
         let retorno = {}
         await AxiosInstance.get(`/Inventory/GetProductInventoryHistory/BQC/0`)
