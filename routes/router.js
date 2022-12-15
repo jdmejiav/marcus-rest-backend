@@ -52,10 +52,4 @@ router.post("/updateRecipe/:id", viewController.updateRecipeById)
 router.post("/login", viewController.login)
 router.post("/register", viewController.register)
 
-
-
-
-
-
-
 module.exports = router;

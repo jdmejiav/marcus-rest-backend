@@ -155,23 +155,34 @@ controller.refreshInventory = async (req, res) => {
                 if (!(val.customer in customers)) {
                     customers[val.customer] = "1"
                 }
+
+                if (products[val.productName] == undefined) {
+                    products[val.productName] = {}
+                }
+
+
+
                 if (products[val.productName] != undefined) {
-                    let boxCode = val.boxCode.replace(/\s/g, '')
-                    if (products[val.productName][val.poNumber + boxCode.charAt(boxCode.length - 1)] == undefined) {
-                        products[val.productName][val.poNumber + boxCode.charAt(boxCode.length - 1)] = {
-                            po: val.poNumber,
-                            age: "NR",
-                            numBoxes: Number.parseInt(val.boxes),
-                            boxType: val.boxCode.replace(/\s/g, ''),
-                            customer: val.customer,
-                            reference: val.reference,
-                            pack: val.pack
-                        }
-                    } else if (products[val.productName][val.poNumber + boxCode.charAt(boxCode.length - 1)].age === "NR") {
-                        let copy = products[val.productName][val.poNumber + boxCode.charAt(boxCode.length - 1)]
-                        products[val.productName][val.poNumber + boxCode.charAt(boxCode.length - 1)].numBoxes = Number.parseInt(copy.numBoxes) + Number.parseInt(val.boxes)
+                    //let boxCode = val.boxCode.replace(/\s/g, '')
+                    //if (products[val.productName][val.poNumber + boxCode.charAt(boxCode.length - 1)] == undefined) {
+                    //products[val.productName][val.poNumber + boxCode.charAt(boxCode.length - 1)] = {}
+                    /*
+                    products[val.productName][val.poNumber + boxCode.charAt(boxCode.length - 1)] = {
+                        po: val.poNumber,
+                        age: "NR",
+                        numBoxes: Number.parseInt(val.boxes),
+                        boxType: val.boxCode.replace(/\s/g, ''),
+                        customer: val.customer,
+                        reference: val.reference,
+                        pack: val.pack
                     }
-                } else {
+                    */
+                    //}
+                    /*else if (products[val.productName][val.poNumber + boxCode.charAt(boxCode.length - 1)].age === "NR") {
+                       let copy = products[val.productName][val.poNumber + boxCode.charAt(boxCode.length - 1)]
+                       products[val.productName][val.poNumber + boxCode.charAt(boxCode.length - 1)].numBoxes = Number.parseInt(copy.numBoxes) + Number.parseInt(val.boxes)
+                   }*/
+                }/*else {
                     let boxCode = val.boxCode.replace(/\s/g, '')
                     products[val.productName] = {}
                     products[val.productName][val.poNumber + boxCode.charAt(boxCode.length - 1)] = {
@@ -183,42 +194,48 @@ controller.refreshInventory = async (req, res) => {
                         reference: val.reference,
                         pack: val.pack
                     }
+                }*/
+                if (products[val.customer] == undefined) {
+                    products[val.customer] = {}
                 }
-                if (products[val.customer] != undefined) {
+                /*if (products[val.customer] != undefined) {
                     let boxCode = val.boxCode.replace(/\s/g, '')
                     if (products[val.customer][val.poNumber + val.reference.split(" ")[0] + boxCode.charAt(boxCode.length - 1)] == undefined) {
-                        products[val.customer][val.poNumber + val.reference.split(" ")[0] + boxCode.charAt(boxCode.length - 1)] = {
-                            po: val.poNumber + val.reference.split(" ")[0],
-                            age: "NR",
-                            numBoxes: Number.parseInt(val.boxes),
-                            boxType: val.boxCode.replace(/\s/g, ''),
-                            customer: val.customer,
-                            reference: val.reference,
-                            pack: val.pack
-                        }
-                    } else if (products[val.customer][val.poNumber + val.reference.split(" ")[0] + boxCode.charAt(boxCode.length - 1)].age === "NR") {
-                        let copy = products[val.customer][val.poNumber + val.reference.split(" ")[0] + boxCode.charAt(boxCode.length - 1)]
-                        products[val.customer][val.poNumber + val.reference.split(" ")[0] + boxCode.charAt(boxCode.length - 1)].numBoxes = Number.parseInt(copy.numBoxes) + Number.parseInt(val.boxes)
-                    }
-                } else {
-                    let boxCode = val.boxCode.replace(/\s/g, '')
-                    products[val.customer] = {}
-                    products[val.customer][val.poNumber + val.reference.split(" ")[0] + boxCode.charAt(boxCode.length - 1)] = {
-                        po: val.poNumber + val.reference.split(" ")[0] + val.reference.split(" ")[0],
-                        age: "NR",
-                        numBoxes: Number.parseInt(val.boxes),
-                        boxType: val.boxCode.replace(/\s/g, ''),
-                        customer: val.customer,
-                        reference: val.reference,
-                        pack: val.pack
-                    }
-                }
+                        */
+                //products[val.customer][val.poNumber + val.reference.split(" ")[0] + boxCode.charAt(boxCode.length - 1)] = {}
+                /*products[val.customer][val.poNumber + val.reference.split(" ")[0] + boxCode.charAt(boxCode.length - 1)] = {
+                    po: val.poNumber + val.reference.split(" ")[0],
+                    age: "NR",
+                    numBoxes: Number.parseInt(val.boxes),
+                    boxType: val.boxCode.replace(/\s/g, ''),
+                    customer: val.customer,
+                    reference: val.reference,
+                    pack: val.pack
+                }*/
+                //}
+                /* else if (products[val.customer][val.poNumber + val.reference.split(" ")[0] + boxCode.charAt(boxCode.length - 1)].age === "NR") {
+                    let copy = products[val.customer][val.poNumber + val.reference.split(" ")[0] + boxCode.charAt(boxCode.length - 1)]
+                    products[val.customer][val.poNumber + val.reference.split(" ")[0] + boxCode.charAt(boxCode.length - 1)].numBoxes = Number.parseInt(copy.numBoxes) + Number.parseInt(val.boxes)
+                }*/
+                //}
+                /*else {
+                       let boxCode = val.boxCode.replace(/\s/g, '')
+                       products[val.customer] = {}
+                       products[val.customer][val.poNumber + val.reference.split(" ")[0] + boxCode.charAt(boxCode.length - 1)] = {
+                           po: val.poNumber + val.reference.split(" ")[0] + val.reference.split(" ")[0],
+                           age: "NR",
+                           numBoxes: Number.parseInt(val.boxes),
+                           boxType: val.boxCode.replace(/\s/g, ''),
+                           customer: val.customer,
+                           reference: val.reference,
+                           pack: val.pack
+                       }
+                   }*/
             })
         }).catch(err => console.log(err))
         retorno.items = products
         retorno.customers = Object.keys(customers)
         const inventory = await Inventory.create({ inventory: retorno })
-        //console.log(products["BH EURO BQT WINTER"]["114079F"])
         return res.status(200).json(inventory.inventory)
     }
     catch (err) {
