@@ -593,13 +593,14 @@ controller.newDay = async (req, res) => {
     try {
         const newDay = await SameDay.deleteMany({}).then(async () => await NextDay.find())
 
-        newDay.reverse().map(async item => {
+        newDay.forEach(async item => {
             let temp = JSON.parse(JSON.stringify(item))
             delete temp._id
             await SameDay.create(temp)
         })
+        console.log(newDay)
         await NextDay.deleteMany({})
-        return res.status(200).json(newDay)
+        return res.status(200).json(newDay.sort({ id: "1" }))
     }
     catch (err) {
         console.log(err)
@@ -622,7 +623,8 @@ controller.addRowSameDay = async (req, res) => {
 }
 controller.getRowsSameDay = async (req, res) => {
     try {
-        const allRows = await SameDay.find();
+        const allRows = await SameDay.find().sort({ id: "1" });
+
         return res.status(200).json(allRows)
     }
     catch (err) {
@@ -679,7 +681,7 @@ controller.addRowNextDay = async (req, res) => {
 }
 controller.getRowsNextDay = async (req, res) => {
     try {
-        const allRows = await NextDay.find();
+        const allRows = await NextDay.find().sort({id:"1"});
         return res.status(200).json(allRows)
     }
     catch (err) {
