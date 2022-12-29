@@ -1,14 +1,12 @@
 const axios = require("axios")
-const connection = require("../model/connection.js")
 const bcrypt = require('bcrypt');
 const crypto = require("crypto");
-const { Recipe, MoveHistSameDay, MoveHistNextDay, SameDay, NextDay, Inventory } = require("../model/mongo")
+const { Recipe, MoveHistSameDay, MoveHistNextDay, SameDay, NextDay, Inventory, User } = require("../model/mongo")
 const moment = require("moment")
 
 require('dotenv').config();
 
 const controller = {};
-
 
 const AxiosInstance = axios.create({
     baseURL: process.env.WEBFLOWERS_URL,
@@ -17,7 +15,6 @@ const AxiosInstance = axios.create({
         'Content-Type': 'application/json'
     }
 })
-
 //Fetch WebFlowers
 
 controller.fetchWorkOrders = async (req, res) => {
@@ -142,7 +139,6 @@ controller.refreshInventory = async (req, res) => {
             }).catch(error => console.log('error', error));
         let begin = new Date()
         let end = new Date()
-
         await AxiosInstance.get("/Procurement/GetPurchaseProducts/BQC/All", {
             params: {
                 DateFrom: moment(begin).format("YYYY-MM-DD"),
@@ -155,82 +151,12 @@ controller.refreshInventory = async (req, res) => {
                 if (!(val.customer in customers)) {
                     customers[val.customer] = "1"
                 }
-
                 if (products[val.productName] == undefined) {
                     products[val.productName] = {}
                 }
-
-
-
-                if (products[val.productName] != undefined) {
-                    //let boxCode = val.boxCode.replace(/\s/g, '')
-                    //if (products[val.productName][val.poNumber + boxCode.charAt(boxCode.length - 1)] == undefined) {
-                    //products[val.productName][val.poNumber + boxCode.charAt(boxCode.length - 1)] = {}
-                    /*
-                    products[val.productName][val.poNumber + boxCode.charAt(boxCode.length - 1)] = {
-                        po: val.poNumber,
-                        age: "NR",
-                        numBoxes: Number.parseInt(val.boxes),
-                        boxType: val.boxCode.replace(/\s/g, ''),
-                        customer: val.customer,
-                        reference: val.reference,
-                        pack: val.pack
-                    }
-                    */
-                    //}
-                    /*else if (products[val.productName][val.poNumber + boxCode.charAt(boxCode.length - 1)].age === "NR") {
-                       let copy = products[val.productName][val.poNumber + boxCode.charAt(boxCode.length - 1)]
-                       products[val.productName][val.poNumber + boxCode.charAt(boxCode.length - 1)].numBoxes = Number.parseInt(copy.numBoxes) + Number.parseInt(val.boxes)
-                   }*/
-                }/*else {
-                    let boxCode = val.boxCode.replace(/\s/g, '')
-                    products[val.productName] = {}
-                    products[val.productName][val.poNumber + boxCode.charAt(boxCode.length - 1)] = {
-                        po: val.poNumber,
-                        age: "NR",
-                        numBoxes: Number.parseInt(val.boxes),
-                        boxType: val.boxCode.replace(/\s/g, ''),
-                        customer: val.customer,
-                        reference: val.reference,
-                        pack: val.pack
-                    }
-                }*/
                 if (products[val.customer] == undefined) {
                     products[val.customer] = {}
                 }
-                /*if (products[val.customer] != undefined) {
-                    let boxCode = val.boxCode.replace(/\s/g, '')
-                    if (products[val.customer][val.poNumber + val.reference.split(" ")[0] + boxCode.charAt(boxCode.length - 1)] == undefined) {
-                        */
-                //products[val.customer][val.poNumber + val.reference.split(" ")[0] + boxCode.charAt(boxCode.length - 1)] = {}
-                /*products[val.customer][val.poNumber + val.reference.split(" ")[0] + boxCode.charAt(boxCode.length - 1)] = {
-                    po: val.poNumber + val.reference.split(" ")[0],
-                    age: "NR",
-                    numBoxes: Number.parseInt(val.boxes),
-                    boxType: val.boxCode.replace(/\s/g, ''),
-                    customer: val.customer,
-                    reference: val.reference,
-                    pack: val.pack
-                }*/
-                //}
-                /* else if (products[val.customer][val.poNumber + val.reference.split(" ")[0] + boxCode.charAt(boxCode.length - 1)].age === "NR") {
-                    let copy = products[val.customer][val.poNumber + val.reference.split(" ")[0] + boxCode.charAt(boxCode.length - 1)]
-                    products[val.customer][val.poNumber + val.reference.split(" ")[0] + boxCode.charAt(boxCode.length - 1)].numBoxes = Number.parseInt(copy.numBoxes) + Number.parseInt(val.boxes)
-                }*/
-                //}
-                /*else {
-                       let boxCode = val.boxCode.replace(/\s/g, '')
-                       products[val.customer] = {}
-                       products[val.customer][val.poNumber + val.reference.split(" ")[0] + boxCode.charAt(boxCode.length - 1)] = {
-                           po: val.poNumber + val.reference.split(" ")[0] + val.reference.split(" ")[0],
-                           age: "NR",
-                           numBoxes: Number.parseInt(val.boxes),
-                           boxType: val.boxCode.replace(/\s/g, ''),
-                           customer: val.customer,
-                           reference: val.reference,
-                           pack: val.pack
-                       }
-                   }*/
             })
         }).catch(err => console.log(err))
         retorno.items = products
@@ -317,11 +243,8 @@ controller.fetchInventoryLegacy = async (req, res) => {
                     }
                 })
             }).catch(error => console.log('error', error));
-
-
         let begin = new Date()
         let end = new Date()
-
         await AxiosInstance.get("/Procurement/GetPurchaseProducts/BQC/All", {
             params: {
                 DateFrom: moment(begin).format("YYYY-MM-DD"),
@@ -402,7 +325,6 @@ controller.fetchInventoryLegacy = async (req, res) => {
         console.log(err)
         return res.status(500)
     }
-
 }
 controller.fetchInventoryLegacyDeprecated = async (req, res) => {
     try {
@@ -591,16 +513,16 @@ controller.moveDay = async (req, res) => {
 
 controller.newDay = async (req, res) => {
     try {
-        const newDay = await SameDay.deleteMany({}).then(async () => await NextDay.find())
+        const newDay = await SameDay.deleteMany({}).then(async () => await NextDay.find().sort({ id: "1" }))
 
         newDay.forEach(async item => {
             let temp = JSON.parse(JSON.stringify(item))
             delete temp._id
             await SameDay.create(temp)
         })
-        console.log(newDay)
+
         await NextDay.deleteMany({})
-        return res.status(200).json(newDay.sort({ id: "1" }))
+        return res.status(200).json(newDay)
     }
     catch (err) {
         console.log(err)
@@ -681,7 +603,7 @@ controller.addRowNextDay = async (req, res) => {
 }
 controller.getRowsNextDay = async (req, res) => {
     try {
-        const allRows = await NextDay.find().sort({id:"1"});
+        const allRows = await NextDay.find().sort({ id: "1" });
         return res.status(200).json(allRows)
     }
     catch (err) {
@@ -876,6 +798,7 @@ controller.deleteRecipe = async (req, res) => {
 }
 
 // Auth EndPoints
+
 controller.login = async (req, res) => {
     try {
         let render = {
@@ -885,29 +808,24 @@ controller.login = async (req, res) => {
         const hash = crypto.randomBytes(64).toString('hex')
         console.log("Hash ", hash)
         try {
-            connection.query(`SELECT * FROM planeacion.user where user.username='${req.body.username}';`, async (err, rows, fields) => {
-                if (rows.length != 0) {
-                    const log = await bcrypt.compare(req.body.password, rows[0].password);
-                    if (log) {
-                        render = {
-                            "message": "Inicio Sesión con éxito",
-                            "success": true,
-                            "token": hash,
-                            "rol": rows[0].rol
-                        }
-                    } else {
-                        render = { "message": "Clave incorrecta" };
-                    }
-                } else {
-                    console.log(err);
+            const user = await User.findOne({ username: req.body.username }).exec()
+            const log = await bcrypt.compare(req.body.password, user.password);
+            if (log) {
+                render = {
+                    "message": "Inicio Sesión con éxito",
+                    "success": true,
+                    "token": hash,
+                    "rol": user.rol
                 }
-                res.send(JSON.stringify(render))
-            })
+            } else {
+                render = { "message": "Clave incorrecta" };
+            }
+            res.status(200).send(render)
         }
         catch (e) {
-            res.send(JSON.stringify({
+            res.send({
                 message: "Usuario o clave incorrectos"
-            }))
+            })
         }
     }
     catch (err) {
@@ -915,7 +833,29 @@ controller.login = async (req, res) => {
         return res.status(500)
     }
 }
+controller.allUsers = async (req, res) => {
+    try {
+        const allUsers = await User.find();
 
+        return res.status(200).json(allUsers)
+    }
+    catch (err) {
+        console.log(err)
+        return res.status(500)
+    }
+}
+
+controller.deleteUser = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const deletedUsers = await User.findByIdAndDelete(id);
+        return res.status(200).json(deletedUsers);
+    }
+    catch (err) {
+        console.log(err)
+        return res.status(500)
+    }
+}
 
 controller.register = async (req, res) => {
     var render = {
@@ -924,26 +864,59 @@ controller.register = async (req, res) => {
     }
     try {
         const hashedPassword = await bcrypt.hash(req.body.password, 10)
-        const hash = crypto.randomBytes(64).toString('hex')
-        connection.query(`INSERT INTO planeacion.user (username, password, nombre, apellido) VALUES ('${req.body.username}', '${hashedPassword}', '${req.body.firstName}', '${req.body.lastName}')`, (err, rows, fields) => {
-            if (err === null) {
-                render = {
-                    "message": "Registro Exitoso",
-                    "success": true,
-                    "token": hash
-                }
-            } else {
-                render = {
-                    message: "Usuario ya registrado",
-                    "success": false
-                }
-            }
-            res.send(JSON.stringify(render))
-        })
+        const newUser = {
+            username: req.body.username,
+            password: hashedPassword,
+            nombre: req.body.firstName,
+            apellido: req.body.lastName,
+            rol: req.body.rol
+        }
+        const user = new User({ ...newUser })
+        await user.save()
+        render = {
+            "message": "Registro Exitoso",
+            "success": true,
+            "token": hashedPassword
+        }
+        res.send(render)
     }
     catch (e) {
+        render = {
+            message: "Usuario ya registrado",
+            "success": false
+        }
         console.log(e)
         res.send(JSON.stringify(render))
+    }
+}
+controller.updateUserByUserName = async (req, res) => {
+    try {
+        const { username } = req.params;
+
+        var modification = {}
+
+        if (req.body.username != null) {
+            modification.username = req.body.username
+        }
+        if (req.body.password != null) {
+            const hashedPassword = await bcrypt.hash(req.body.password, 10)
+            modification.password = hashedPassword
+        }
+        if (req.body.nombre != null) {
+            modification.nombre = req.body.nombre
+        }
+        if (req.body.apellido != null) {
+            modification.apellido = req.body.apellido
+        }
+        if (req.body.rol != null) {
+            modification.rol = req.body.rol
+        }
+
+        var user = await User.findOneAndUpdate({ username: username }, modification)
+        return res.status(200).json(user)
+    }
+    catch (err) {
+        return res.status(500)
     }
 }
 module.exports = controller;

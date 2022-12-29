@@ -49,6 +49,10 @@ router.post("/updateRecipe/:id", viewController.updateRecipeById)
 
 
 //AUTH ROUTES
+
+router.delete("/deleteUser/:id", viewController.deleteUser)
+router.post("/updateUser/:username", viewController.updateUserByUserName)
+router.get("/allUsers", viewController.allUsers)
 router.post("/login", viewController.login)
 router.post("/register", viewController.register)
 

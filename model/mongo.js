@@ -79,6 +79,29 @@ const SamedaySchema = new mongoose.Schema({
     hargoods: String,
     hargoods_status: String,
 })
+const UserSchema = new mongoose.Schema({
+    username: {
+        type: String,
+        required: true,
+        unique: true
+    },
+    password: {
+        type: String,
+        required: true,
+    },
+    nombre: {
+        type: String,
+        required: true
+    },
+    apellido: {
+        type: String,
+        required: true
+    },
+    rol: {
+        type: String
+    }
+
+})
 
 const Recipe = mongoose.model("Recipe", RecipeSchema)
 const Inventory = mongoose.model("Inventory", InventorySchema)
@@ -86,5 +109,6 @@ const MoveHistSameDay = mongoose.model("MoveHistSameDay", MoveHistSameDaySchema)
 const MoveHistNextDay = mongoose.model("MoveHistNextDay", MoveHistNextDaySchema)
 const SameDay = mongoose.model("SameDay", SamedaySchema)
 const NextDay = mongoose.model("NextDay", NextdaySchema)
+const User = mongoose.model("User", UserSchema)
 
-module.exports = { Recipe, MoveHistSameDay, MoveHistNextDay, SameDay, NextDay, Inventory }
+module.exports = { Recipe, MoveHistSameDay, MoveHistNextDay, SameDay, NextDay, Inventory, User }
