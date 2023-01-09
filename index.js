@@ -14,6 +14,7 @@ app.use('/', router);
 
 const start = async () => {
     try {
+        console.log(process.env.DB_USERNAME)
         await mongoose.connect(
             `mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@mongodbtest.wrrye7l.mongodb.net/?retryWrites=true&w=majority`
         );
