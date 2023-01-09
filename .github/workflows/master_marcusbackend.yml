@@ -22,6 +22,9 @@ jobs:
           envkey_DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
           envkey_DB_USERNAME: ${{ secrets.DB_USERNAME }}
           envkey_PORT: ${{ secrets.PORT }}
+          directory: /
+          file_name: .env
+          fail_on_empty: false
           
 
       - uses: actions/checkout@v2
