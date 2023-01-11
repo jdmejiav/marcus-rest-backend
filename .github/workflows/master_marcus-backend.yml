@@ -27,15 +27,12 @@ jobs:
 
       - name: 'Resolve Project Dependencies Using Npm'
         shell: pwsh
-        env:
-          DB_USERNAME: ${{ secrets.DB_USERNAME }}
-          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-          WEBFLOWERS_URL: ${{ secrets.WEBFLOWERS_URL }}
-          API_KEY: ${{ secrets.API_KEY }}
         run: |
           pushd './${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
           npm install
           npm run build --if-present
+          npm run test --if-present
+          popd
 
       - name: 'Run Azure Functions Action'
         uses: Azure/functions-action@v1
@@ -44,4 +41,4 @@ jobs:
           app-name: 'marcus-backend'
           slot-name: 'Production'
           package: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_70A2AD9D348A4FBDAE32B3DC8F52594D }}
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_F91497D64FD44AA29BF542A912FD181E }}
