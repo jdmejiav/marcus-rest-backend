@@ -36,7 +36,6 @@ jobs:
           pushd './${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
           npm install
           npm run build --if-present
-          npm start
 
       - name: 'Run Azure Functions Action'
         uses: Azure/functions-action@v1
